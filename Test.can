@@ -1,0 +1,102 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+
+variables
+{
+  int count;
+  message 0x100 msg1={dlc=3};
+  int varL;
+  int varH;
+  int i;
+  timer t1;//seconds
+  mstimer t2;// seconds
+  
+}
+
+on start
+{
+  count=0;
+  write("Test ...Simulation started");
+//  msg1.dlc=3;
+  setTimer(t1,2);
+  setTimer(t2,11000);
+}
+/*on key 't'
+{
+  count++;
+  msg1.byte(0)=0XA1;
+  msg1.byte(1)=0XB1;
+  msg1.byte(2)=0XC1;
+  output(msg1);
+}*/
+
+on timer t1
+{
+  write("timer t1 elapsed");
+  setTimer(t1,2);
+  count++;
+  msg1.byte(0)=0xA1;
+  msg1.byte(1)=0xB2;
+  msg1.byte(2)=0xC3;
+  output(msg1);// transmit msg on CAN bus
+  //write("count of key press %d",count);
+}
+on timer t2
+{
+  write("timer t2 elapsed");
+  cancelTimer(t1);
+}
+on message 0x100
+{
+  write("received message %d",this.id);
+  write("data:%x %x %x",this.byte(0),this.byte(1),this.byte(2));
+  for(i=0;i<3;i++)
+  {
+  varL=this.byte(i) & 0x0F;
+  write("lower nibble of byte(%d)=%X",i,varL);
+  varH=this.byte(i)>>4 & 0X0F;
+  write("higher nibbe of byte(%d)=%x",i,varH);
+}
+  @NS1::sysvar1=i;
+  @NS1::sysvar2=count;
+}
+on sysvar NS1::sysvar1{
+  write("sysvar got changed");
+  write("every time i value getting changed=%d",@NS1::sysvar1);
+}
+on sysvar_update NS1::sysvar2
+{
+  write("sysvar got updated");
+  write("updated count at end of exceution=%d",@NS1::sysvar2);
+}
+on signal engine_speed
+{
+  write("signal got changed");
+  write("engine speed=%f",getSignal(engine_speed));
+}
+on signal_update engine_speed
+{
+  write("signal got updated");
+  write("engine speed=%f",getSignal(engine_speed));
+}
+on preStart
+{
+  write("before start");
+  write("t- for transmit");
+}
+
+on preStop
+{
+  write("before stop");
+  write("count of key press %d",count);
+  
+}
+
+on stopMeasurement
+{
+  write("stop");
+}
+
